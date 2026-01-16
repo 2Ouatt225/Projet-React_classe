@@ -8,6 +8,7 @@ import UserList from './Applications/redux/UserList';
 import UserDetails from './Applications/redux/UserDetails';
 import CurrencyConverter from './Applications/CurrencyConverter/CurrencyConverter';
 import HistoryScreen from './Applications/CurrencyConverter/HistoryScreen';
+import HistoryDetails from './Applications/CurrencyConverter/HistoryDetails';
 
 const Stack = createNativeStackNavigator();
 
@@ -18,6 +19,7 @@ export default function App() {
         <Stack.Navigator initialRouteName="CurrencyConverter">
            <Stack.Screen name="CurrencyConverter" component={CurrencyConverter} options={{ title: 'Convertisseur de Devises' }} />
            <Stack.Screen name="HistoryScreen" component={HistoryScreen} options={{ title: 'Historique' }} />
+           <Stack.Screen name="HistoryDetails" component={HistoryDetails} options={{ title: 'Détails de la conversion' }} />
           <Stack.Screen name="UserList" component={UserList} options={{ title: 'Users' }} />
           <Stack.Screen name="UserDetails" component={UserDetails} options={{ title: 'User Details' }} />
         </Stack.Navigator>

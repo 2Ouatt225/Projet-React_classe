@@ -1,81 +1,155 @@
 import React from 'react';
-import { StyleSheet, Text, View, FlatList, TouchableOpacity, Button } from 'react-native';
+import { StyleSheet, Text, View, FlatList, TouchableOpacity, Button, SafeAreaView, Platform } from 'react-native';
 import { useSelector, useDispatch } from 'react-redux';
 import { clearHistory } from './currencySlice';
 
+import { useNavigation } from '@react-navigation/native';
+
 export default function HistoryScreen() {
   const dispatch = useDispatch();
+  const navigation = useNavigation();
   const history = useSelector((state) => state.currency.history);
 
   const renderItem = ({ item }) => (
-    <View style={styles.itemContainer}>
-        <View style={styles.leftCol}>
-            <Text style={styles.conversionText}>{item.amount} {item.base} ➔ {item.result} {item.target}</Text>
-            <Text style={styles.dateText}>{item.date}</Text>
+    <TouchableOpacity style={styles.historyCard} onPress={() => navigation.navigate('HistoryDetails', { item })}>
+        <View style={styles.row}>
+            <View>
+                <Text style={styles.conversionTitle}>{item.amount} {item.base} → {item.result} {item.target}</Text>
+                <Text style={styles.dateText}>{item.date}</Text>
+            </View>
+            <View style={styles.iconContainer}>
+                 <Text style={styles.iconText}>➔</Text>
+            </View>
         </View>
-    </View>
+    </TouchableOpacity>
   );
 
   return (
-    <View style={styles.container}>
-      <View style={styles.headerRow}>
-          <Text style={styles.header}>Historique</Text>
-          {history.length > 0 && <Button title="Effacer" onPress={() => dispatch(clearHistory())} color="red" />}
-      </View>
-      
-      {history.length === 0 ? (
-        <Text style={styles.emptyText}>Aucun historique disponible.</Text>
-      ) : (
-        <FlatList
-            data={history}
-            keyExtractor={(item) => item.id}
-            renderItem={renderItem}
-        />
-      )}
-    </View>
+    <SafeAreaView style={styles.safeArea}>
+        <View style={styles.container}>
+            <View style={styles.headerRow}>
+                <Text style={styles.headerTitle}>Historique</Text>
+                {history.length > 0 && (
+                    <TouchableOpacity style={styles.clearButton} onPress={() => dispatch(clearHistory())}>
+                        <Text style={styles.clearButtonText}>Tout effacer</Text>
+                    </TouchableOpacity>
+                )}
+            </View>
+            
+            {history.length === 0 ? (
+                <View style={styles.emptyContainer}>
+                    <Text style={styles.emptyIcon}>📂</Text>
+                    <Text style={styles.emptyText}>Aucune conversion récente</Text>
+                    <Text style={styles.emptySubtext}>Vos conversions apparaîtront ici.</Text>
+                </View>
+            ) : (
+                <FlatList
+                    data={history}
+                    keyExtractor={(item) => item.id}
+                    renderItem={renderItem}
+                    contentContainerStyle={styles.listContent}
+                    showsVerticalScrollIndicator={false}
+                />
+            )}
+        </View>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
+  safeArea: {
+      flex: 1,
+      backgroundColor: '#F3F4F6',
+  },
   container: {
     flex: 1,
-    padding: 20,
-    backgroundColor: '#fff',
+    paddingHorizontal: 20,
+    paddingTop: Platform.OS === 'android' ? 20 : 0,
   },
   headerRow: {
       flexDirection: 'row',
       justifyContent: 'space-between',
       alignItems: 'center',
-      marginBottom: 20
+      marginTop: 20,
+      marginBottom: 20,
   },
-  header: {
-    fontSize: 24,
-    fontWeight: 'bold',
+  headerTitle: {
+    fontSize: 28,
+    fontWeight: '800',
+    color: '#111827',
   },
-  itemContainer: {
-    backgroundColor: '#f9f9f9',
-    padding: 15,
-    marginVertical: 8,
-    borderRadius: 8,
-    borderLeftWidth: 5,
-    borderLeftColor: '#007bff'
+  clearButton: {
+      paddingVertical: 8,
+      paddingHorizontal: 16,
+      backgroundColor: '#FEF2F2',
+      borderRadius: 20,
+      borderWidth: 1,
+      borderColor: '#FEE2E2',
   },
-  leftCol: {
-      flex: 1
-  },
-  conversionText: {
-      fontSize: 16,
+  clearButtonText: {
+      color: '#EF4444',
       fontWeight: '600',
-      marginBottom: 5
+      fontSize: 14,
+  },
+  listContent: {
+      paddingBottom: 20,
+  },
+  historyCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    padding: 20,
+    marginBottom: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 3,
+  },
+  row: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+  },
+  conversionTitle: {
+      fontSize: 18,
+      fontWeight: '700',
+      color: '#1F2937',
+      marginBottom: 4,
   },
   dateText: {
       fontSize: 12,
-      color: 'gray'
+      color: '#9CA3AF',
+  },
+  iconContainer: {
+      width: 32,
+      height: 32,
+      borderRadius: 16,
+      backgroundColor: '#EEF2FF',
+      justifyContent: 'center',
+      alignItems: 'center',
+  },
+  iconText: {
+      color: '#4F46E5',
+      fontWeight: 'bold',
+  },
+  emptyContainer: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+      marginTop: -50,
+  },
+  emptyIcon: {
+      fontSize: 48,
+      marginBottom: 20,
   },
   emptyText: {
+      fontSize: 20,
+      fontWeight: '600',
+      color: '#374151',
+      marginBottom: 8,
+  },
+  emptySubtext: {
       fontSize: 16,
-      color: 'gray',
-      textAlign: 'center',
-      marginTop: 50
+      color: '#9CA3AF',
   }
 });

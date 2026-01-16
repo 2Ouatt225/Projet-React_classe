@@ -33,6 +33,13 @@ export const currencySlice = createSlice({
     setAmount: (state, action) => {
       state.amount = action.payload;
     },
+    swapCurrencies: (state) => {
+        const temp = state.baseCurrency;
+        state.baseCurrency = state.targetCurrency;
+        state.targetCurrency = temp;
+        // Optionally clear result or recalculate immediately
+        state.result = null; 
+    },
     convertCurrency: (state) => {
       if (state.rates[state.targetCurrency] && state.amount) {
         const rate = state.rates[state.targetCurrency];
@@ -53,6 +60,9 @@ export const currencySlice = createSlice({
     },
     clearHistory: (state) => {
       state.history = [];
+    },
+    deleteHistoryItem: (state, action) => {
+      state.history = state.history.filter(item => item.id !== action.payload);
     },
   },
   extraReducers: (builder) => {
@@ -77,6 +87,6 @@ export const currencySlice = createSlice({
   },
 });
 
-export const { setBaseCurrency, setTargetCurrency, setAmount, convertCurrency, clearHistory } = currencySlice.actions;
+export const { setBaseCurrency, setTargetCurrency, setAmount, convertCurrency, clearHistory, deleteHistoryItem, swapCurrencies } = currencySlice.actions;
 
 export default currencySlice.reducer;
