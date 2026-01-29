@@ -1,9 +1,11 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { View, Text, StyleSheet, TouchableOpacity, SafeAreaView, TextInput, FlatList } from "react-native";
 import { Svg, Path } from "react-native-svg";
 import { useFonts } from 'expo-font';
 import * as SplashScreen from 'expo-splash-screen';
 import { Ionicons } from "@expo/vector-icons";
+import { useFocusEffect } from '@react-navigation/native';
+import { getTransactions, initDB } from './database';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -15,27 +17,32 @@ export default function HistoriqueTransaction({ navigation }) {
     });
 
     const [searchText, setSearchText] = useState("");
+    const [transactions, setTransactions] = useState([]);
 
     useEffect(() => {
+        initDB(); // Ensure DB is ready
         if (fontsLoaded) {
             SplashScreen.hideAsync();
         }
     }, [fontsLoaded]);
 
+    useFocusEffect(
+        useCallback(() => {
+            const data = getTransactions();
+            setTransactions(data);
+        }, [])
+    );
+
     if (!fontsLoaded) {
         return null;
     }
 
-    // Mock transaction data
-    const transactions = Array.from({ length: 8 }, (_, index) => ({
-        id: `transaction-${index}`,
-        date: "12/10/2025",
-        time: "12:33",
-        fromAmount: "1000",
-        fromCurrency: "XOF",
-        toAmount: "1.52",
-        toCurrency: "EURO"
-    }));
+    // Filter transactions
+    const filteredTransactions = transactions.filter(t => 
+        t.fromCurrency.toLowerCase().includes(searchText.toLowerCase()) || 
+        t.toCurrency.toLowerCase().includes(searchText.toLowerCase()) ||
+        t.date.includes(searchText)
+    );
 
     const renderTransaction = ({ item }) => (
         <View style={styles.transactionContainer}>
@@ -53,6 +60,13 @@ export default function HistoriqueTransaction({ navigation }) {
                     <Text style={styles.transactionCurrency}>{item.toCurrency}</Text>
                 </View>
             </View>
+        </View>
+    );
+
+    const renderEmptyComponent = () => (
+        <View style={styles.emptyContainer}>
+            <Ionicons name="time-outline" size={60} color="#ccc" />
+            <Text style={styles.emptyText}>Aucune transaction trouvée</Text>
         </View>
     );
 
@@ -77,7 +91,7 @@ export default function HistoriqueTransaction({ navigation }) {
             {/* Search Bar */}
             <View style={styles.searchbarContainer}>
                 <TextInput
-                    placeholder="Rechercher"
+                    placeholder="Rechercher par devise ou date"
                     placeholderTextColor="#51514f8d"
                     style={styles.searchbarInput}
                     value={searchText}
@@ -88,10 +102,14 @@ export default function HistoriqueTransaction({ navigation }) {
 
             {/* Transaction List */}
             <FlatList
-                data={transactions}
+                data={filteredTransactions}
                 renderItem={renderTransaction}
-                keyExtractor={(item) => item.id}
-                contentContainerStyle={styles.scrollContent}
+                keyExtractor={(item) => item.id.toString()}
+                contentContainerStyle={[
+                    styles.scrollContent,
+                    filteredTransactions.length === 0 && styles.emptyListContent
+                ]}
+                ListEmptyComponent={renderEmptyComponent}
             />
         </SafeAreaView>
     );
@@ -208,4 +226,19 @@ const styles = StyleSheet.create({
         fontFamily: 'Rowdies-Bold',
         color: '#E1A247',
     },
+    emptyContainer: {
+        flex: 1,
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginTop: 50,
+    },
+    emptyText: {
+        marginTop: 10,
+        fontSize: 16,
+        fontFamily: 'Rowdies-Regular',
+        color: '#888',
+    },
+    emptyListContent: {
+        flexGrow: 1,
+    }
 });

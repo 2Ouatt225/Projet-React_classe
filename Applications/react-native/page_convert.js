@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 
 import { StyleSheet, View, Text, TouchableOpacity, Image, Dimensions, SafeAreaView, Alert, Modal, FlatList, ActivityIndicator, TextInput } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
 import Svg, { Path } from 'react-native-svg';
 import { Ionicons } from '@expo/vector-icons';
 import { fetchSupportedCodes, fetchExchangeRate } from './api';
+import { initDB, addTransaction } from './database';
 
 const { width } = Dimensions.get('window');
 
@@ -43,6 +44,8 @@ const VectorIcon = ({ size = 24, color = "#E1A246" }) => (
 
 export default function PageConvert() {
     const navigation = useNavigation();
+    const route = useRoute(); // Might need to import useRoute or get it from props if available
+    const { initialAmount } = route.params || {};
 
     // Default Images (Placeholders)
     const xofFlag = require('./../../AssetsProjet/Image/coin2 Background Removed 1.png');
@@ -50,7 +53,11 @@ export default function PageConvert() {
     const defaultFlag = euroFlag; // Fallback
 
     // State
-    const [sourceCurrency, setSourceCurrency] = useState({ code: 'XOF', flag: xofFlag, amount: '1500' });
+    const [sourceCurrency, setSourceCurrency] = useState({ 
+        code: 'XOF', 
+        flag: xofFlag, 
+        amount: initialAmount || '1500' // Use param or default
+    });
     const [targetCurrency, setTargetCurrency] = useState({ code: 'EUR', flag: euroFlag, amount: '...' });
 
     const [currencyList, setCurrencyList] = useState([]);
@@ -60,6 +67,7 @@ export default function PageConvert() {
     const [searchQuery, setSearchQuery] = useState('');
 
     useEffect(() => {
+        initDB();
         loadCurrencies();
     }, []);
 
@@ -89,7 +97,7 @@ export default function PageConvert() {
         // New Source Code = tempTarget.code
         // New Target Code = tempSource.code
         // Amount = tempSource.amount (preserved)
-        performConversion(tempTarget.code, tempSource.code, tempSource.amount);
+        performConversion(tempTarget.code, tempSource.code, tempSource.amount, false); // false = don't save history
     };
 
     const handleSourcePress = () => {
@@ -112,17 +120,17 @@ export default function PageConvert() {
         if (selectingSide === 'source') {
             setSourceCurrency(prev => ({ ...prev, code: currency.code, flag: newFlag }));
             // If source changes, recalculate target
-            performConversion(currency.code, targetCurrency.code, sourceCurrency.amount);
+            performConversion(currency.code, targetCurrency.code, sourceCurrency.amount, false);
         } else {
             setTargetCurrency(prev => ({ ...prev, code: currency.code, flag: newFlag }));
             // If target changes, recalculate target
-            performConversion(sourceCurrency.code, currency.code, sourceCurrency.amount);
+            performConversion(sourceCurrency.code, currency.code, sourceCurrency.amount, false);
         }
         setModalVisible(false);
         setSearchQuery('');
     };
 
-    const performConversion = async (baseCode, targetCode, amount) => {
+    const performConversion = async (baseCode, targetCode, amount, saveToHistory = true) => {
         if (!amount || isNaN(parseFloat(amount))) {
             setTargetCurrency(prev => ({ ...prev, amount: '...' }));
             return;
@@ -132,6 +140,10 @@ export default function PageConvert() {
         if (rate) {
             const converted = (parseFloat(amount) * rate).toFixed(4);
             setTargetCurrency(prev => ({ ...prev, code: targetCode, amount: converted }));
+            
+            if (saveToHistory) {
+                addTransaction(amount, baseCode, converted, targetCode);
+            }
         } else {
             Alert.alert("Erreur de conversion", "Impossible d'obtenir le taux de change.");
             setTargetCurrency(prev => ({ ...prev, amount: 'Erreur' }));
@@ -140,7 +152,7 @@ export default function PageConvert() {
     };
 
     const handleConvertPress = () => {
-        performConversion(sourceCurrency.code, targetCurrency.code, sourceCurrency.amount);
+        performConversion(sourceCurrency.code, targetCurrency.code, sourceCurrency.amount, true);
     };
 
     const filteredCurrencies = currencyList.filter(c =>

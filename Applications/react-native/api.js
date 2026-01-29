@@ -1,64 +1,57 @@
 import { API_KEY, BASE_URL } from './config';
-
-// Mock data for offline/fallback mode
-const MOCK_CURRENCIES = [
-    { code: 'XOF', name: 'West African CFA Franc' },
-    { code: 'EUR', name: 'Euro' },
-    { code: 'USD', name: 'United States Dollar' },
-    { code: 'GBP', name: 'British Pound Sterling' },
-    { code: 'JPY', name: 'Japanese Yen' },
-    { code: 'CAD', name: 'Canadian Dollar' },
-    { code: 'AUD', name: 'Australian Dollar' },
-    { code: 'CHF', name: 'Swiss Franc' },
-    { code: 'CNY', name: 'Chinese Yuan' },
-    { code: 'INR', name: 'Indian Rupee' },
-];
-
-const MOCK_RATES = {
-    'XOF-EUR': 0.0015,
-    'EUR-XOF': 655.96,
-    'XOF-USD': 0.0018,
-    'USD-XOF': 555.50,
-    'EUR-USD': 1.18,
-    'USD-EUR': 0.85,
-};
+import { cacheRate, getCachedRate, cacheSupportedCodes, getCachedSupportedCodes } from './database';
 
 export const fetchSupportedCodes = async () => {
     try {
+        // Try Network
         const response = await fetch(`${BASE_URL}/${API_KEY}/codes`);
         const data = await response.json();
-
+        
         if (data.result === 'success') {
-            // Transform [[code, name], ...] to [{code, name}, ...]
-            return data.supported_codes.map(item => ({
-                code: item[0],
-                name: item[1]
+            const formattedCodes = data.supported_codes.map(code => ({
+                code: code[0],
+                name: code[1]
             }));
-        } else {
-            console.error('API Error fetching codes:', data['error-type']);
-            return MOCK_CURRENCIES;
+            // Update Cache
+            cacheSupportedCodes(formattedCodes);
+            return formattedCodes;
         }
     } catch (error) {
-        console.warn('Network Error fetching codes, using mock data:', error.message);
-        return MOCK_CURRENCIES;
+        console.log("Network request failed, checking cache for codes...", error.message);
     }
+
+    // Fallback Code (Cache)
+    const cached = getCachedSupportedCodes();
+    if (cached && cached.length > 0) {
+        return cached; 
+    }
+
+    console.log("No cache available, returning empty list.");
+    return [];
 };
 
 export const fetchExchangeRate = async (base, target) => {
     try {
+        // Try Network
         const response = await fetch(`${BASE_URL}/${API_KEY}/pair/${base}/${target}`);
         const data = await response.json();
-
+        
         if (data.result === 'success') {
-            return data.conversion_rate;
-        } else {
-            console.error('API Error fetching rate:', data['error-type']);
-            const mockKey = `${base}-${target}`;
-            return MOCK_RATES[mockKey] || 1.0;
+            const rate = data.conversion_rate;
+            // Update Cache
+            cacheRate(base, target, rate);
+            return rate;
         }
     } catch (error) {
-        console.warn('Network Error fetching rate, using mock data:', error.message);
-        const mockKey = `${base}-${target}`;
-        return MOCK_RATES[mockKey] || 1.0;
+        console.log(`Network request failed for ${base}/${target}, checking cache...`);
     }
+
+    // Fallback Code (Cache)
+    const cachedRate = getCachedRate(base, target);
+    if (cachedRate !== null) {
+        return cachedRate;
+    }
+
+    console.log("No cache available for this pair.");
+    return null;
 };
