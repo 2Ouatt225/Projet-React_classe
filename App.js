@@ -5,6 +5,7 @@ import Launcher from './Applications/react-native/Launcher';
 import PageAcceuil from './Applications/react-native/pageAcceuil';
 import Recherchedevise from './Applications/react-native/recherchedevise';
 import HistoriqueTransaction from './Applications/react-native/Historique.transaction';
+import PageConvert from './Applications/react-native/page_convert';
 
 const Stack = createNativeStackNavigator();
 
@@ -21,6 +22,7 @@ export default function App() {
         <Stack.Screen name="PageAcceuil" component={PageAcceuil} />
         <Stack.Screen name="Recherchedevise" component={Recherchedevise} />
         <Stack.Screen name="HistoriqueTransaction" component={HistoriqueTransaction} />
+        <Stack.Screen name="PageConvert" component={PageConvert} />
       </Stack.Navigator>
     </NavigationContainer>
   );

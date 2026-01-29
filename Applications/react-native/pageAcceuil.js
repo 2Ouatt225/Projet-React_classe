@@ -124,10 +124,10 @@ export default function PageAcceuil({ navigation }) {
 
                 {/* Feature Cards */}
                 <View style={styles.featureCardsRow}>
-                    <View style={styles.featureCard}>
+                    <TouchableOpacity style={styles.featureCard} onPress={() => navigation.navigate('PageConvert')}>
                         <Image source={require('../../AssetsProjet/Image/coin2 Background Removed 1.png')} style={styles.featureIcon} resizeMode="contain" />
                         <Text style={styles.featureText}>Convertir</Text>
-                    </View>
+                    </TouchableOpacity>
                     <TouchableOpacity style={styles.featureCard} onPress={() => navigation.navigate('HistoriqueTransaction')}>
                         <Image source={require('../../AssetsProjet/Image/k 1.png')} style={styles.featureIcon} resizeMode="contain" />
                         <Text style={styles.featureText}>Historique</Text>
@@ -239,8 +239,8 @@ const styles = StyleSheet.create({
         padding: 12,
     },
     featureIcon: {
-        width: '70%',
-        height: '60%',
+        width: '80%',
+        height: '70%',
         marginBottom: 5,
     },
     featureText: {
