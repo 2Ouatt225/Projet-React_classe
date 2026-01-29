@@ -5,6 +5,7 @@ import { useFonts } from 'expo-font';
 import * as SplashScreen from 'expo-splash-screen';
 import { Ionicons } from "@expo/vector-icons";
 import { fetchSupportedCodes, fetchExchangeRate } from './api';
+import { useNavigation, useRoute } from '@react-navigation/native';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -80,10 +81,6 @@ const MiniChart = ({ data, color = "#00C853" }) => {
         </View>
     );
 };
-
-import { useNavigation, useRoute } from '@react-navigation/native';
-
-// ... (code above)
 
 export default function Recherchedevise({ navigation }) { // Ensure this matches existing function name
     const route = useRoute();
