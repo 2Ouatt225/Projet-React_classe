@@ -35,7 +35,7 @@ const MiniChart = ({ color = "#00C853" }) => (
     </View>
 );
 
-export default function PageAcceuil() {
+export default function PageAcceuil({ navigation }) {
     const [fontsLoaded] = useFonts({
         'Rowdies-Regular': require('../../AssetsProjet/Font/Rowdies-Regular/rowdies/Rowdies-Regular.ttf'),
         'Rowdies-Bold': require('../../AssetsProjet/Font/Rowdies-Regular/rowdies/Rowdies-Bold.ttf'),
@@ -97,7 +97,7 @@ export default function PageAcceuil() {
     return (
         <SafeAreaView style={styles.safeArea}>
             <View style={styles.header}>
-                <TouchableOpacity onPress={() => { /* Action retour */ }} style={styles.backButton}>
+                <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
                     <Svg width="24" height="24" viewBox="0 0 20 20" fill="none">
                         <Path 
                             d="M17.3333 20V8.23529H5.1L9.9 12.4706L8.03333 14.1471L0 7.05882L8 0L9.9 1.67647L5.1 5.88235H20V20H17.3333Z" 
@@ -128,14 +128,14 @@ export default function PageAcceuil() {
                         <Image source={require('../../AssetsProjet/Image/coin2 Background Removed 1.png')} style={styles.featureIcon} resizeMode="contain" />
                         <Text style={styles.featureText}>Convertir</Text>
                     </View>
-                    <View style={styles.featureCard}>
+                    <TouchableOpacity style={styles.featureCard} onPress={() => navigation.navigate('HistoriqueTransaction')}>
                         <Image source={require('../../AssetsProjet/Image/k 1.png')} style={styles.featureIcon} resizeMode="contain" />
                         <Text style={styles.featureText}>Historique</Text>
-                    </View>
-                    <View style={styles.featureCard}>
+                    </TouchableOpacity>
+                    <TouchableOpacity style={styles.featureCard} onPress={() => navigation.navigate('Recherchedevise')}>
                         <Image source={require('../../AssetsProjet/Image/images (4) Background Removed 1.png')} style={styles.featureIcon} resizeMode="contain" />
                         <Text style={styles.featureText}>Taux</Text>
-                    </View>
+                    </TouchableOpacity>
                 </View>
 
                 {/* Devise du jour */}

@@ -8,7 +8,7 @@ const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 // Keep the splash screen visible while we fetch resources
 SplashScreen.preventAutoHideAsync();
 
-export default function Launcher() {
+export default function Launcher({ navigation }) {
   const [fontsLoaded] = useFonts({
     'Rowdies-Regular': require('../../AssetsProjet/Font/Rowdies-Regular/rowdies/Rowdies-Regular.ttf'),
     'Rowdies-Bold': require('../../AssetsProjet/Font/Rowdies-Regular/rowdies/Rowdies-Bold.ttf'),
@@ -26,8 +26,7 @@ export default function Launcher() {
   }
 
   const handleStart = () => {
-    // Navigation vers la page principale sera ajoutée plus tard
-    console.log('Salut');
+    navigation.navigate('PageAcceuil');
   };
 
   return (
