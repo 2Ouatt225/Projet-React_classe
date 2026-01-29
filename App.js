@@ -41,6 +41,8 @@
 
 import Launcher from './Applications/react-native/Launcher';
 import PageAcceuil from './Applications/react-native/pageAcceuil';
+import Recherchedevise from './Applications/react-native/recherchedevise';
+import HistoriqueTransaction from './Applications/react-native/Historique.transaction';
 
 export default function App() {
   return (
